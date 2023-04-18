@@ -105,11 +105,21 @@ jobs:
             type=gha,scope=main-${{ matrix.gpu-driver }}
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.gpu-driver }}
 
-      # - name: Docker Hub Description
-      #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/tags/*' && vars.DOCKERHUB_REPOSITORY != ''
-      #   uses: peter-evans/dockerhub-description@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-      #     repository: ${{ vars.DOCKERHUB_REPOSITORY }}
-      #     short-description: ${{ github.event.repository.description }}
+      - name: Docker Hub Description
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/tags/*' && vars.DOCKERHUB_REPOSITORY != ''
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_REPOSITORY }}
+          short-description: ${{ github.event.repository.description }}
+          
+      - uses: paperspace/deploy-action@v1.0
+        name: Deploy to Paperspace
+        id: deploy
+        env:
+          PAPERSPACE_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
+          CONTAINER_SHA: ${{ steps.set-container-sha.outputs.CONTAINER_SHA }}
+        with:
+          projectId: pioiimjvdsx
+          image: ghcr.io/gradient-ai/InvokeAI:latest@${{ steps.build-push.outputs.digest }}
