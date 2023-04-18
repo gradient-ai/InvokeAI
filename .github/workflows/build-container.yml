@@ -27,7 +27,7 @@ jobs:
         gpu-driver:
         - cuda
         - cpu
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.gpu-driver }}
     env:
       # torch/arm64 does not support GPU currently, so arm64 builds
@@ -54,7 +54,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
             ghcr.io/${{ github.repository }}
-            ${{ env.DOCKERHUB_REPOSITORY }}
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -82,13 +81,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Login to Docker Hub
-      #   if: github.event_name != 'pull_request' && vars.DOCKERHUB_REPOSITORY != ''
-      #   uses: docker/login-action@v2
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build container
         id: docker_build
         uses: docker/build-push-action@v4
@@ -100,18 +92,15 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
-            type=gha,scope=${{ github.ref_name }}-${{ matrix.gpu-driver }}
-            type=gha,scope=main-${{ matrix.gpu-driver }}
-          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.gpu-driver }}
-
-      - name: Docker Hub Description
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/tags/*' && vars.DOCKERHUB_REPOSITORY != ''
-        uses: peter-evans/dockerhub-description@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ vars.DOCKERHUB_REPOSITORY }}
-          short-description: ${{ github.event.repository.description }}
+            type=gha,scope=${{ github.ref_name }}-${{ matrix.flavor }}
+            type=gha,scope=main-${{ matrix.flavor }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.flavor }}
+          
+      - name: Set container SHA
+        id: set-container-sha
+        run: |
+          echo "::set-output name=CONTAINER_SHA::${{ steps.build-push.outputs.digest }}"
+          echo $CONTAINER_SHA  
           
       - uses: paperspace/deploy-action@v1.0
         name: Deploy to Paperspace
@@ -121,4 +110,4 @@ jobs:
           CONTAINER_SHA: ${{ steps.set-container-sha.outputs.CONTAINER_SHA }}
         with:
           projectId: pioiimjvdsx
-          image: ghcr.io/${{ github.repository }}/InvokeAI:latest@${{ steps.build-push.outputs.digest }}
+          image: ghcr.io/gradient-ai/InvokeAI:latest@${{ steps.build-push.outputs.digest }}
