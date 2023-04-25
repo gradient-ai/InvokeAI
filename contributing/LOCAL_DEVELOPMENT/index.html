@@ -1367,32 +1367,6 @@ requiring tests to ensure coverage. This can be run by opening
 <h2 id="front-end">Front End<a class="headerlink" href="#front-end" title="Permanent link">#</a></h2>
 <!--#TODO: get input from blessedcoolant here, for the moment inserted the frontend README via snippets extension.-->
 
-<h1 id="invokeai-web-ui">InvokeAI Web UI<a class="headerlink" href="#invokeai-web-ui" title="Permanent link">#</a></h1>
-<p>The UI is a fairly straightforward Typescript React app. The only really fancy stuff is the Unified Canvas.</p>
-<p>Code in <code>invokeai/frontend/web/</code> if you want to have a look.</p>
-<h2 id="details">Details<a class="headerlink" href="#details" title="Permanent link">#</a></h2>
-<p>State management is Redux via <a href="https://github.com/reduxjs/redux-toolkit">Redux Toolkit</a>. Communication with server is a mix of HTTP and <a href="https://github.com/socketio/socket.io-client">socket.io</a> (with a custom redux middleware to help).</p>
-<p><a href="https://github.com/chakra-ui/chakra-ui">Chakra-UI</a> for components and styling.</p>
-<p><a href="https://github.com/konvajs/react-konva">Konva</a> for the canvas, but we are pushing the limits of what is feasible with it (and HTML canvas in general). We plan to rebuild it with <a href="https://github.com/pixijs/pixijs">PixiJS</a> to take advantage of WebGL's improved raster handling.</p>
-<p><a href="https://vitejs.dev/">Vite</a> for bundling.</p>
-<p>Localisation is via <a href="https://github.com/i18next/react-i18next">i18next</a>, but translation happens on our <a href="https://hosted.weblate.org/engage/invokeai/">Weblate</a> project. Only the English source strings should be changed on this repo.</p>
-<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">#</a></h2>
-<p>Thanks for your interest in contributing to the InvokeAI Web UI!</p>
-<p>We encourage you to ping <a class="magiclink magiclink-github magiclink-mention" href="https://github.com/psychedelicious" title="GitHub User: psychedelicious">@psychedelicious</a> and <a class="magiclink magiclink-github magiclink-mention" href="https://github.com/blessedcoolant" title="GitHub User: blessedcoolant">@blessedcoolant</a> on <a href="https://discord.gg/ZmtBAhwWhy">Discord</a> if you want to contribute, just to touch base and ensure your work doesn't conflict with anything else going on. The project is very active.</p>
-<h3 id="dev-environment">Dev Environment<a class="headerlink" href="#dev-environment" title="Permanent link">#</a></h3>
-<p>Install <a href="https://nodejs.org/en/download/">node</a> and <a href="https://classic.yarnpkg.com/lang/en/">yarn classic</a>.</p>
-<p>From <code>invokeai/frontend/web/</code> run <code>yarn install</code> to get everything set up.</p>
-<p>Start everything in dev mode:</p>
-<ol>
-<li>Start the dev server: <code>yarn dev</code></li>
-<li>Start the InvokeAI UI per usual: <code>invokeai --web</code></li>
-<li>Point your browser to the dev server address e.g. <code>http://localhost:5173/</code></li>
-</ol>
-<h3 id="production-builds">Production builds<a class="headerlink" href="#production-builds" title="Permanent link">#</a></h3>
-<p>For a number of technical and logistical reasons, we need to commit UI build artefacts to the repo.</p>
-<p>If you submit a PR, there is a good chance we will ask you to include a separate commit with a build of the app.</p>
-<p>To build for production, run <code>yarn build</code>.</p>
-
   <hr>
 <div class="md-source-file">
   <small>
