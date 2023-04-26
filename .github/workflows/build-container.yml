@@ -82,7 +82,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build container
-        id: docker_build
+        id: build-push
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -110,4 +110,4 @@ jobs:
           CONTAINER_SHA: ${{ steps.set-container-sha.outputs.CONTAINER_SHA }}
         with:
           projectId: pioiimjvdsx
-          image: ghcr.io/gradient-ai/InvokeAI:latest@${{ steps.build-push.outputs.digest }}
+          image: ghcr.io/${{ github.repository }}:latest@${{ steps.build-push.outputs.digest }}
