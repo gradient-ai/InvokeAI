@@ -101,7 +101,10 @@ jobs:
         run: |
           echo "::set-output name=CONTAINER_SHA::${{ steps.build-push.outputs.digest }}"
           echo $CONTAINER_SHA  
-          
+      # https://github.com/orgs/community/discussions/25768#discussioncomment-3249183
+      # - name: downcase REPO
+      #   run: |
+      #     echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}      
       - uses: paperspace/deploy-action@v1.1
         name: Deploy to Paperspace
         id: deploy
@@ -110,4 +113,5 @@ jobs:
           CONTAINER_SHA: ${{ steps.set-container-sha.outputs.CONTAINER_SHA }}
         with:
           projectId: pioiimjvdsx
-          image: ghcr.io/${{ github.repository }}:latest@${{ steps.build-push.outputs.digest }}
+          # image: ghcr.io/${{ github.repository }}:latest@${{ steps.build-push.outputs.digest }}
+          image: ghcr.io/gradient-ai/invokeai:latest@${{ steps.build-push.outputs.digest }}
