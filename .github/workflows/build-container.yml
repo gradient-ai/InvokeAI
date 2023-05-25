@@ -2,7 +2,7 @@ name: build container image
 on:
   push:
     branches:
-      - 'main'
+      - 'pre-nodes'
       - 'update/ci/docker/*'
       - 'update/docker/*'
       - 'dev/ci/docker/*'
@@ -27,17 +27,14 @@ jobs:
       fail-fast: false
       matrix:
         flavor:
-          - rocm
           - cuda
           - cpu
         include:
-          - flavor: rocm
-            pip-extra-index-url: 'https://download.pytorch.org/whl/rocm5.2'
           - flavor: cuda
             pip-extra-index-url: ''
           - flavor: cpu
             pip-extra-index-url: 'https://download.pytorch.org/whl/cpu'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: ${{ matrix.flavor }}
     env:
       PLATFORMS: 'linux/amd64,linux/arm64'
@@ -53,7 +50,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
             ghcr.io/${{ github.repository }}
-            ${{ vars.DOCKERHUB_REPOSITORY }}
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -81,15 +77,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' && vars.DOCKERHUB_REPOSITORY != ''
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build container
-        id: docker_build
+        id: build-push
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -103,12 +92,23 @@ jobs:
             type=gha,scope=${{ github.ref_name }}-${{ matrix.flavor }}
             type=gha,scope=main-${{ matrix.flavor }}
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.flavor }}
-
-      - name: Docker Hub Description
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/tags/*' && vars.DOCKERHUB_REPOSITORY != ''
-        uses: peter-evans/dockerhub-description@v3
+          
+      - name: Set container SHA
+        id: set-container-sha
+        run: |
+          echo "::set-output name=CONTAINER_SHA::${{ steps.build-push.outputs.digest }}"
+          echo $CONTAINER_SHA  
+      # https://github.com/orgs/community/discussions/25768#discussioncomment-3249183
+      # - name: downcase REPO
+      #   run: |
+      #     echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}      
+      - uses: paperspace/deploy-action@v1.2
+        name: Deploy to Paperspace
+        id: deploy
+        env:
+          PAPERSPACE_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
+          CONTAINER_SHA: ${{ steps.set-container-sha.outputs.CONTAINER_SHA }}
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ vars.DOCKERHUB_REPOSITORY }}
-          short-description: ${{ github.event.repository.description }}
+          projectId: pioiimjvdsx
+          # image: ghcr.io/${{ github.repository }}:latest@${{ steps.build-push.outputs.digest }}
+          image: ghcr.io/gradient-ai/invokeai:latest@${{ steps.build-push.outputs.digest }}
