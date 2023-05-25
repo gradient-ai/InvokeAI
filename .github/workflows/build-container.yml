@@ -105,7 +105,7 @@ jobs:
       # - name: downcase REPO
       #   run: |
       #     echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}      
-      - uses: paperspace/deploy-action@v1.1
+      - uses: paperspace/deploy-action@v1.2
         name: Deploy to Paperspace
         id: deploy
         env:
